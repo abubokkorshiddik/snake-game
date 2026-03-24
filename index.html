@@ -240,4 +240,12 @@ function draw() {
     snake.unshift(newHead);
 
     if(score >= 50 && score < 100) ctx.strokeText("Stage 2: Harder!", 250, 20);
-    if(score >= 100 && score <
+    if(score >= 100 && score < 120) ctx.strokeText("Stage 3: Hard!", 250, 20);
+    if(score >= 120 && score < 150) ctx.strokeText("Stage 4: Harder!", 250, 20);
+    if(score >= 150) ctx.strokeText("Stage 5: Hardest!", 250, 20);
+}
+
+init();
+</script>
+</body>
+</html>
