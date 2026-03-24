@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Snake Game - Wrap Around</title>
+    <title>Slither Challenge 🐍</title>
     <style>
         body {
             text-align: center;
@@ -37,9 +37,9 @@
 </head>
 <body>
 
-<h2>🐍 Snake Game - Wrap Around</h2>
+<h2>Slither Challenge 🐍</h2>
 <h3>Score: <span id="score">0</span></h3>
-<canvas id="game" width="400" height="400"></canvas>
+<canvas id="game" width="600" height="600"></canvas>
 
 <div id="controls">
     <div>
@@ -58,14 +58,15 @@
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-let box = 30; // bigger box
+
+let box = 30; // Snake size
 let snake, direction, food, score, speed, game;
 
 // Load high score
 let highScore = localStorage.getItem("highScore") || 0;
 
 function init() {
-    snake = [{x: 6*box, y: 6*box}];
+    snake = [{x: 10*box, y: 10*box}];
     direction = "RIGHT";
     score = 0;
     speed = 200; // slower speed
@@ -77,12 +78,12 @@ function init() {
 }
 
 function randomFood() {
-    let x = Math.floor(Math.random()*Math.floor(400/box)) * box;
-    let y = Math.floor(Math.random()*Math.floor(400/box)) * box;
+    let x = Math.floor(Math.random()*Math.floor(600/box)) * box;
+    let y = Math.floor(Math.random()*Math.floor(600/box)) * box;
     // make sure food not on snake
     while(snake.some(part => part.x === x && part.y === y)) {
-        x = Math.floor(Math.random()*Math.floor(400/box)) * box;
-        y = Math.floor(Math.random()*Math.floor(400/box)) * box;
+        x = Math.floor(Math.random()*Math.floor(600/box)) * box;
+        y = Math.floor(Math.random()*Math.floor(600/box)) * box;
     }
     return {x, y};
 }
@@ -106,9 +107,56 @@ document.getElementById("restart").addEventListener("click", init);
 
 function draw() {
     ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, 400, 400);
+    ctx.fillRect(0, 0, 600, 600);
 
     // Draw snake
+    ctx.fillStyle = "lime";
+    snake.forEach(part => ctx.fillRect(part.x, part.y, box, box));
+
+    // Draw food
+    ctx.fillStyle = "red";
+    ctx.fillRect(food.x, food.y, box, box);
+
+    let headX = snake[0].x;
+    let headY = snake[0].y;
+
+    if (direction === "LEFT") headX -= box;
+    if (direction === "UP") headY -= box;
+    if (direction === "RIGHT") headX += box;
+    if (direction === "DOWN") headY += box;
+
+    // Wrap-around screen
+    if(headX >= 600) headX = 0;
+    if(headX < 0) headX = 600 - box;
+    if(headY >= 600) headY = 0;
+    if(headY < 0) headY = 600 - box;
+
+    // Eat food
+    if(headX === food.x && headY === food.y){
+        score++;
+        document.getElementById("score").innerText = score;
+        food = randomFood();
+    } else {
+        snake.pop();
+    }
+
+    let newHead = {x: headX, y: headY};
+
+    // Game over only if hits itself
+    if(snake.some(part => part.x === headX && part.y === headY)){
+        clearInterval(game);
+        if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
+        alert("Game Over!\nScore: " + score + "\nHigh Score: " + highScore);
+    }
+
+    snake.unshift(newHead);
+}
+
+// Start game
+init();
+</script>
+</body>
+</html>    // Draw snake
     ctx.fillStyle = "lime";
     snake.forEach(part => ctx.fillRect(part.x, part.y, box, box));
 
