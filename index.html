@@ -58,15 +58,15 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// Responsive rectangle: portrait for phone, landscape for PC
+// Always landscape rectangle: wider than tall
 if(window.innerWidth < 768){
-    // Phone: portrait rectangle (shorter width, longer height)
-    canvas.width  = Math.min(window.innerWidth * 0.8, 360);
-    canvas.height = Math.min(window.innerHeight * 0.7, 640);
+    // Phone: smaller landscape rectangle
+    canvas.width  = Math.min(window.innerWidth * 0.95, 480);
+    canvas.height = Math.min(window.innerHeight * 0.5, 300);
 } else {
-    // PC: landscape rectangle (wider than tall)
+    // PC: larger landscape rectangle
     canvas.width  = Math.min(window.innerWidth * 0.95, 800);
-    canvas.height = Math.min(window.innerHeight * 0.7, 600);
+    canvas.height = Math.min(window.innerHeight * 0.7, 500);
 }
 
 // Grid setup
