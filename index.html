@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         html, body {
-            touch-action: manipulation; /* disables double-tap zoom */
+            touch-action: manipulation;
         }
         body {
             text-align: center;
@@ -16,10 +16,6 @@
             padding: 0;
         }
         canvas {
-            width: 95vw;   /* responsive width */
-            height: 70vh;  /* responsive height (rectangle) */
-            max-width: 800px;
-            max-height: 600px;
             background: black;
             border: 2px solid #0f0;
         }
@@ -80,12 +76,19 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// set canvas size dynamically (rectangle)
-canvas.width = Math.min(window.innerWidth * 0.95, 800);
-canvas.height = Math.min(window.innerHeight * 0.7, 600);
+// Decide square for phone, rectangle for PC
+if(window.innerWidth < 768){ 
+    // phone: square
+    canvas.width = Math.min(window.innerWidth * 0.95, 500);
+    canvas.height = canvas.width;
+} else {
+    // pc: rectangle
+    canvas.width = Math.min(window.innerWidth * 0.95, 800);
+    canvas.height = Math.min(window.innerHeight * 0.7, 600);
+}
 
-let cols = 20; // number of columns
-let rows = 15; // number of rows
+let cols = 20;
+let rows = (canvas.height < canvas.width) ? 20 : 15; // more rows if rectangle
 let boxX = canvas.width / cols;
 let boxY = canvas.height / rows;
 
@@ -118,21 +121,9 @@ function randomPos() {
     return {x,y};
 }
 
-function spawnFood() {
-    let pos = randomPos();
-    foods.push({x: pos.x, y: pos.y});
-}
-
-function spawnHazard() {
-    let pos = randomPos();
-    hazards.push({x: pos.x, y: pos.y});
-}
-
-function spawnBonus(value) {
-    let pos = randomPos();
-    bonusFood = {x: pos.x, y: pos.y, value};
-    bonusTimer = 200;
-}
+function spawnFood() { foods.push(randomPos()); }
+function spawnHazard() { hazards.push(randomPos()); }
+function spawnBonus(value) { bonusFood = {...randomPos(), value}; bonusTimer = 200; }
 
 // Controls
 document.onkeydown = e => {
@@ -149,25 +140,17 @@ document.getElementById("restart").onclick = init;
 
 function drawSnake() {
     snake.forEach((part, index) => {
-        let gradient = ctx.createLinearGradient(part.x, part.y, part.x+boxX, part.y+boxY);
-        gradient.addColorStop(0, "lime");
-        gradient.addColorStop(1, "green");
-        ctx.fillStyle = gradient;
+        ctx.fillStyle = index===0 ? "yellow" : "lime";
         ctx.fillRect(part.x, part.y, boxX, boxY);
-        if(index === 0){
-            ctx.fillStyle = "yellow";
-            ctx.fillRect(part.x, part.y, boxX, boxY);
-        }
     });
 }
 
 function drawFoods() {
     frameCount++;
     foods.forEach(food => {
-        let pulse = 2 * Math.sin(frameCount / 10);
         ctx.fillStyle = frameCount % 20 < 10 ? "red" : "#ff5555";
         ctx.beginPath();
-        ctx.arc(food.x + boxX/2, food.y + boxY/2, Math.min(boxX,boxY)/2 + pulse, 0, Math.PI*2);
+        ctx.arc(food.x + boxX/2, food.y + boxY/2, Math.min(boxX,boxY)/2, 0, Math.PI*2);
         ctx.fill();
     });
 }
@@ -175,7 +158,7 @@ function drawFoods() {
 function drawHazards() {
     hazards.forEach(h => {
         ctx.fillStyle = "#333";
-        ctx.fillRect(h.x, h.y, boxX+5, boxY+5);
+        ctx.fillRect(h.x, h.y, boxX, boxY);
     });
 }
 
@@ -184,16 +167,8 @@ function drawBonus() {
         ctx.fillStyle = "gold";
         ctx.font = Math.min(boxX,boxY) + "px Arial";
         ctx.fillText("★", bonusFood.x+5, bonusFood.y+boxY-5);
-
-        ctx.fillStyle = "white";
-        ctx.fillRect(bonusFood.x, bonusFood.y-8, boxX, 5);
-        ctx.fillStyle = "blue";
-        ctx.fillRect(bonusFood.x, bonusFood.y-8, (bonusTimer/200)*boxX, 5);
-
         bonusTimer--;
-        if(bonusTimer <= 0){
-            bonusFood = null;
-        }
+        if(bonusTimer <= 0) bonusFood = null;
     }
 }
 
@@ -226,15 +201,6 @@ function draw() {
             foods.splice(i,1);
             ate = true;
             spawnFood();
-
-            if(score % 5 === 0) spawnBonus(3);
-            if(score % 10 === 0) spawnBonus(5);
-            if(score % 20 === 0){
-                spawnHazard();
-                speed = Math.max(50, speed - 20);
-                clearInterval(game);
-                game = setInterval(draw, speed);
-            }
         }
     });
 
@@ -252,17 +218,13 @@ function draw() {
         clearInterval(game);
         if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
         ctx.fillStyle = "white";
+        ctx.font = Math.min(boxX,boxY) + "px Arial";
         ctx.fillText("GAME OVER!", canvas.width/4, canvas.height/2);
         ctx.fillText("Score: " + score, canvas.width/4, canvas.height/2 + boxY*1.5);
         ctx.fillText("High Score: " + highScore, canvas.width/4, canvas.height/2 + boxY*3);
     }
 
     snake.unshift(newHead);
-
-    if(score >= 50 && score < 100) ctx.strokeText("Stage 2: Harder!", canvas.width/3, 20);
-    if(score >= 100 && score < 120) ctx.strokeText("Stage 3: Hard!", canvas.width/3, 20);
-    if(score >= 120 && score < 150) ctx.strokeText("Stage 4: Harder!", canvas.width/3, 20);
-    if(score >= 150) ctx.strokeText("Stage 5: Hardest!", canvas.width/3, 20);
 }
 
 init();
