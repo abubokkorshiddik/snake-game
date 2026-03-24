@@ -100,7 +100,7 @@ document.addEventListener("keydown", e => {
     else if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
 });
 
-// Touch button controls (super speedy response)
+// Touch button controls (instant response)
 document.getElementById("up").onclick = () => { if(direction!=="DOWN") direction="UP"; };
 document.getElementById("down").onclick = () => { if(direction!=="UP") direction="DOWN"; };
 document.getElementById("left").onclick = () => { if(direction!=="RIGHT") direction="LEFT"; };
@@ -145,7 +145,7 @@ function draw() {
         if(score % 20 === 0){
             speed = Math.max(50, speed - 20); // faster, but not too fast
             clearInterval(game);
-            game = setInterval(draw, speed);
+            game = setInterval(draw, speed); // restart loop immediately
         }
     } else {
         snake.pop();
