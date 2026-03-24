@@ -18,12 +18,12 @@
             margin-top: 15px;
         }
         .btn {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             margin: 5px;
-            font-size: 24px;
+            font-size: 32px;
             font-weight: bold;
-            border-radius: 10px;
+            border-radius: 12px;
             border: none;
             background: #0f0;
             color: black;
@@ -144,92 +144,6 @@ function draw() {
 
     // Game over only if hits itself
     if(snake.some(part => part.x === headX && part.y === headY)){
-        clearInterval(game);
-        if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
-        alert("Game Over!\nScore: " + score + "\nHigh Score: " + highScore);
-    }
-
-    snake.unshift(newHead);
-}
-
-// Start game
-init();
-</script>
-</body>
-</html>    // Draw snake
-    ctx.fillStyle = "lime";
-    snake.forEach(part => ctx.fillRect(part.x, part.y, box, box));
-
-    // Draw food
-    ctx.fillStyle = "red";
-    ctx.fillRect(food.x, food.y, box, box);
-
-    let headX = snake[0].x;
-    let headY = snake[0].y;
-
-    if (direction === "LEFT") headX -= box;
-    if (direction === "UP") headY -= box;
-    if (direction === "RIGHT") headX += box;
-    if (direction === "DOWN") headY += box;
-
-    // Wrap around screen
-    if(headX >= 400) headX = 0;
-    if(headX < 0) headX = 400 - box;
-    if(headY >= 400) headY = 0;
-    if(headY < 0) headY = 400 - box;
-
-    // Eat food
-    if(headX === food.x && headY === food.y){
-        score++;
-        document.getElementById("score").innerText = score;
-        food = randomFood();
-    } else {
-        snake.pop();
-    }
-
-    let newHead = {x: headX, y: headY};
-
-    // Game over only if hits itself
-    if(snake.some(part => part.x === headX && part.y === headY)){
-        clearInterval(game);
-        if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
-        alert("Game Over!\nScore: " + score + "\nHigh Score: " + highScore);
-    }
-
-    snake.unshift(newHead);
-}
-
-// Start game
-init();
-</script>
-
-</body>
-</html>    // Draw food
-    ctx.fillStyle = "red";
-    ctx.fillRect(food.x, food.y, box, box);
-
-    let headX = snake[0].x;
-    let headY = snake[0].y;
-
-    if (direction === "LEFT") headX -= box;
-    if (direction === "UP") headY -= box;
-    if (direction === "RIGHT") headX += box;
-    if (direction === "DOWN") headY += box;
-
-    // Eat food
-    if (headX === food.x && headY === food.y) {
-        score++;
-        document.getElementById("score").innerText = score;
-        if(speed > 60){ speed -= 5; clearInterval(game); game = setInterval(draw, speed); }
-        food = randomFood();
-    } else {
-        snake.pop();
-    }
-
-    let newHead = {x: headX, y: headY};
-
-    // Game over
-    if(headX < 0 || headY < 0 || headX >= 400 || headY >= 400 || snake.some(p => p.x === headX && p.y === headY)) {
         clearInterval(game);
         if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
         alert("Game Over!\nScore: " + score + "\nHigh Score: " + highScore);
