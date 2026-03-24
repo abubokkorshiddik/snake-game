@@ -20,10 +20,10 @@
             margin-top: 15px;
         }
         .btn {
-            width: 120px;   /* Larger buttons */
+            width: 120px;
             height: 120px;
             margin: 10px;
-            font-size: 48px; /* Bigger arrows */
+            font-size: 48px;
             font-weight: bold;
             border-radius: 20px;
             border: none;
@@ -69,56 +69,57 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let box = 30; // Snake size
-let snake, direction, food, score, speed, game;
-
-// Load high score
+let box = 30;
+let snake, direction, score, speed, game;
+let foods = [];
+let trees = [];
+let frameCount = 0;
 let highScore = localStorage.getItem("highScore") || 0;
 
 function init() {
     snake = [{x: 10*box, y: 10*box}];
     direction = "RIGHT";
     score = 0;
-    speed = 200; // starting speed
-    food = randomFood();
+    speed = 200;
+    foods = [];
+    trees = [];
+    spawnFood(1);
     document.getElementById("score").innerText = score;
 
     if (game) clearInterval(game);
     game = setInterval(draw, speed);
 }
 
-function randomFood() {
+function randomPos() {
     let x = Math.floor(Math.random()*Math.floor(600/box)) * box;
     let y = Math.floor(Math.random()*Math.floor(600/box)) * box;
-    while(snake.some(part => part.x === x && part.y === y)) {
-        x = Math.floor(Math.random()*Math.floor(600/box)) * box;
-        y = Math.floor(Math.random()*Math.floor(600/box)) * box;
-    }
-    return {x, y};
+    return {x,y};
 }
 
-// Keyboard controls
+function spawnFood(value=1) {
+    let pos = randomPos();
+    foods.push({x: pos.x, y: pos.y, value});
+}
+
+function spawnTree() {
+    let pos = randomPos();
+    trees.push({x: pos.x, y: pos.y});
+}
+
+// Controls
 document.addEventListener("keydown", e => {
     if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
     else if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
     else if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
     else if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
 });
-
-// Touch button controls (instant response)
 document.getElementById("up").onclick = () => { if(direction!=="DOWN") direction="UP"; };
 document.getElementById("down").onclick = () => { if(direction!=="UP") direction="DOWN"; };
 document.getElementById("left").onclick = () => { if(direction!=="RIGHT") direction="LEFT"; };
 document.getElementById("right").onclick = () => { if(direction!=="LEFT") direction="RIGHT"; };
-
-// Restart button
 document.getElementById("restart").onclick = init;
 
-function draw() {
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, 600, 600);
-
-    // Draw snake with gradient body
+function drawSnake() {
     snake.forEach((part, index) => {
         let gradient = ctx.createLinearGradient(part.x, part.y, part.x+box, part.y+box);
         gradient.addColorStop(0, "lime");
@@ -127,8 +128,6 @@ function draw() {
         ctx.beginPath();
         ctx.roundRect(part.x, part.y, box, box, 8);
         ctx.fill();
-
-        // Head with distinct color
         if(index === 0){
             ctx.fillStyle = "yellow";
             ctx.beginPath();
@@ -136,56 +135,94 @@ function draw() {
             ctx.fill();
         }
     });
+}
 
-    // Draw food
-    ctx.fillStyle = "red";
-    ctx.beginPath();
-    ctx.arc(food.x + box/2, food.y + box/2, box/2, 0, Math.PI*2);
-    ctx.fill();
+function drawFoods() {
+    frameCount++;
+    foods.forEach(food => {
+        let pulse = 2 * Math.sin(frameCount / 10);
+        ctx.fillStyle = frameCount % 20 < 10 ? "red" : "#ff5555";
+        ctx.beginPath();
+        ctx.arc(food.x + box/2, food.y + box/2, (box/2) + pulse, 0, Math.PI*2);
+        ctx.fill();
+    });
+}
+
+function drawTrees() {
+    trees.forEach(tree => {
+        ctx.fillStyle = "brown";
+        ctx.fillRect(tree.x, tree.y, box, box);
+        ctx.fillStyle = "green";
+        ctx.beginPath();
+        ctx.arc(tree.x+box/2, tree.y, box/2, 0, Math.PI*2);
+        ctx.fill();
+    });
+}
+
+function draw() {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, 600, 600);
+
+    drawSnake();
+    drawFoods();
+    drawTrees();
 
     let headX = snake[0].x;
     let headY = snake[0].y;
-
     if (direction === "LEFT") headX -= box;
     if (direction === "UP") headY -= box;
     if (direction === "RIGHT") headX += box;
     if (direction === "DOWN") headY += box;
 
-    // Wrap-around screen
     if(headX >= 600) headX = 0;
     if(headX < 0) headX = 600 - box;
     if(headY >= 600) headY = 0;
     if(headY < 0) headY = 600 - box;
 
     // Eat food
-    if(headX === food.x && headY === food.y){
-        score++;
-        document.getElementById("score").innerText = score;
-        food = randomFood();
+    let ate = false;
+    foods.forEach((food, i) => {
+        if(headX === food.x && headY === food.y){
+            score += food.value;
+            document.getElementById("score").innerText = score;
+            foods.splice(i,1);
+            ate = true;
 
-        // Increase speed every 20 points
-        if(score % 20 === 0){
-            speed = Math.max(50, speed - 20); // faster, but not too fast
-            clearInterval(game);
-            game = setInterval(draw, speed); // restart loop immediately
+            // spawn normal food
+            spawnFood(1);
+
+            // special foods
+            if(score % 5 === 0) spawnFood(3);
+            if(score % 10 === 0){ spawnFood(5); spawnFood(3); }
+            if(score % 20 === 0){
+                spawnTree();
+                speed = Math.max(50, speed - 20);
+                clearInterval(game);
+                game = setInterval(draw, speed);
+            }
         }
-    } else {
-        snake.pop();
-    }
+    });
+    if(!ate) snake.pop();
 
     let newHead = {x: headX, y: headY};
 
-    // Game over only if hits itself
-    if(snake.some(part => part.x === headX && part.y === headY)){
+    // Collision with self or tree
+    if(snake.some(part => part.x === headX && part.y === headY) ||
+       trees.some(tree => tree.x === headX && tree.y === headY)){
         clearInterval(game);
         if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
         alert("Game Over!\nScore: " + score + "\nHigh Score: " + highScore);
     }
 
     snake.unshift(newHead);
+
+    // Difficulty stages
+    if(score >= 50 && score < 100) ctx.strokeText("Stage 2: Harder!", 250, 20);
+    if(score >= 100 && score < 120) ctx.strokeText("Stage 3: Hard!", 250, 20);
+    if(score >= 120 && score < 150) ctx.strokeText("Stage 4: Harder!", 250, 20);
+    if(score >= 150) ctx.strokeText("Stage 5: Hardest!", 250, 20);
 }
 
-// Start game
 init();
 </script>
 </body>
