@@ -14,14 +14,18 @@
             padding: 0;
         }
         canvas {
+            width: 95vw;   /* responsive width */
+            height: 60vh;  /* responsive height (rectangle) */
+            max-width: 800px;
+            max-height: 600px;
             background: black;
             border: 2px solid #0f0;
         }
         #controls { margin-top: 15px; }
         .btn {
-            width: 25vw; height: 25vw;
-            max-width: 150px; max-height: 150px;
-            margin: 8px; font-size: 8vw;
+            width: 20vw; height: 20vw;
+            max-width: 120px; max-height: 120px;
+            margin: 8px; font-size: 7vw;
             font-weight: bold; border-radius: 25px;
             border: none; background: #0f0; color: black;
             cursor: pointer; user-select: none;
@@ -56,18 +60,13 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// Square for phone, rectangle for PC
-if(window.innerWidth < 768){
-    canvas.width = Math.min(window.innerWidth * 0.95, 500);
-    canvas.height = canvas.width; // square
-} else {
-    canvas.width = Math.min(window.innerWidth * 0.95, 800);
-    canvas.height = Math.min(window.innerHeight * 0.7, 600); // rectangle
-}
+// Always rectangular, but responsive
+canvas.width = Math.min(window.innerWidth * 0.95, 800);
+canvas.height = Math.min(window.innerHeight * 0.6, 600);
 
 // Grid setup
 let cols = 20;
-let rows = (canvas.width === canvas.height) ? 20 : 15;
+let rows = 15;
 let boxX = canvas.width / cols;
 let boxY = canvas.height / rows;
 
