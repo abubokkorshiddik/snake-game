@@ -84,7 +84,7 @@ let frameCount = 0;
 let highScore = localStorage.getItem("highScore") || 0;
 
 function init() {
-    snake = [{x: 10*boxX, y: 7*boxY}];
+    snake = [{col: 10, row: 7}];
     direction = "RIGHT";
     score = 0;
     speed = 200;
@@ -100,7 +100,7 @@ function init() {
 function randomPos() {
     let col = Math.floor(Math.random()*cols);
     let row = Math.floor(Math.random()*rows);
-    return {x: col*boxX, y: row*boxY};
+    return {col, row};
 }
 
 function spawnFood() { foods.push(randomPos()); }
@@ -123,7 +123,7 @@ document.getElementById("restart").onclick = init;
 function drawSnake() {
     snake.forEach((part, index) => {
         ctx.fillStyle = index===0 ? "yellow" : "lime";
-        ctx.fillRect(part.x, part.y, boxX, boxY);
+        ctx.fillRect(part.col*boxX, part.row*boxY, boxX, boxY);
     });
 }
 
@@ -132,7 +132,7 @@ function drawFoods() {
     foods.forEach(food => {
         ctx.fillStyle = frameCount % 20 < 10 ? "red" : "#ff5555";
         ctx.beginPath();
-        ctx.arc(food.x + boxX/2, food.y + boxY/2, Math.min(boxX,boxY)/2, 0, Math.PI*2);
+        ctx.arc(food.col*boxX + boxX/2, food.row*boxY + boxY/2, Math.min(boxX,boxY)/2, 0, Math.PI*2);
         ctx.fill();
     });
 }
@@ -140,7 +140,7 @@ function drawFoods() {
 function drawHazards() {
     hazards.forEach(h => {
         ctx.fillStyle = "#333";
-        ctx.fillRect(h.x, h.y, boxX, boxY);
+        ctx.fillRect(h.col*boxX, h.row*boxY, boxX, boxY);
     });
 }
 
@@ -148,7 +148,7 @@ function drawBonus() {
     if(bonusFood){
         ctx.fillStyle = "gold";
         ctx.font = Math.min(boxX,boxY) + "px Arial";
-        ctx.fillText("★", bonusFood.x+5, bonusFood.y+boxY-5);
+        ctx.fillText("★", bonusFood.col*boxX+5, bonusFood.row*boxY+boxY-5);
         bonusTimer--;
         if(bonusTimer <= 0) bonusFood = null;
     }
@@ -163,21 +163,21 @@ function draw() {
     drawHazards();
     drawBonus();
 
-    let headX = snake[0].x;
-    let headY = snake[0].y;
-    if (direction === "LEFT") headX -= boxX;
-    if (direction === "UP") headY -= boxY;
-    if (direction === "RIGHT") headX += boxX;
-    if (direction === "DOWN") headY += boxY;
+    let head = {col: snake[0].col, row: snake[0].row};
+    if (direction === "LEFT") head.col--;
+    if (direction === "UP") head.row--;
+    if (direction === "RIGHT") head.col++;
+    if (direction === "DOWN") head.row++;
 
-    if(headX >= canvas.width) headX = 0;
-    if(headX < 0) headX = canvas.width - boxX;
-    if(headY >= canvas.height) headY = 0;
-    if(headY < 0) headY = canvas.height - boxY;
+    // Wrap around
+    if(head.col >= cols) head.col = 0;
+    if(head.col < 0) head.col = cols-1;
+    if(head.row >= rows) head.row = 0;
+    if(head.row < 0) head.row = rows-1;
 
     let ate = false;
     foods.forEach((food, i) => {
-        if(headX === food.x && headY === food.y){
+        if(head.col === food.col && head.row === food.row){
             score++;
             document.getElementById("score").innerText = score;
             foods.splice(i,1);
@@ -186,7 +186,7 @@ function draw() {
         }
     });
 
-    if(bonusFood && headX === bonusFood.x && headY === bonusFood.y){
+    if(bonusFood && head.col === bonusFood.col && head.row === bonusFood.row){
         score += bonusFood.value;
         document.getElementById("score").innerText = score;
         bonusFood = null;
@@ -194,9 +194,8 @@ function draw() {
 
     if(!ate) snake.pop();
 
-    let newHead = {x: headX, y: headY};
-
-    if(snake.some(part => part.x === headX && part.y === headY)){
+    // Game over if snake hits itself
+    if(snake.some(part => part.col === head.col && part.row === head.row)){
         clearInterval(game);
         if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
         ctx.fillStyle = "white";
@@ -206,7 +205,7 @@ function draw() {
         ctx.fillText("High Score: " + highScore, canvas.width/4, canvas.height/2 + boxY*3);
     }
 
-    snake.unshift(newHead);
+    snake.unshift(head);
 }
 
 init();
