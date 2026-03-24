@@ -134,14 +134,10 @@ function drawSnake() {
         gradient.addColorStop(0, "lime");
         gradient.addColorStop(1, "green");
         ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.roundRect(part.x, part.y, box, box, 8);
-        ctx.fill();
+        ctx.fillRect(part.x, part.y, box, box);
         if(index === 0){
             ctx.fillStyle = "yellow";
-            ctx.beginPath();
-            ctx.roundRect(part.x, part.y, box, box, 10);
-            ctx.fill();
+            ctx.fillRect(part.x, part.y, box, box);
         }
     });
 }
@@ -170,7 +166,7 @@ function drawBonus() {
         ctx.font = "24px Arial";
         ctx.fillText("★", bonusFood.x+5, bonusFood.y+25);
 
-        // Draw timer bar
+        // Timer bar
         ctx.fillStyle = "white";
         ctx.fillRect(bonusFood.x, bonusFood.y-8, box, 5);
         ctx.fillStyle = "blue";
@@ -235,7 +231,7 @@ function draw() {
     let newHead = {x: headX, y: headY};
 
     if(snake.some(part => part.x === headX && part.y === headY) ||
-       hazards.some(h => headX >= h.x && headX <= h.x+10 && headY >= h.y && headY <= h.y+10)){
+       hazards.some(h => headX >= h.x && headX <= h.x+box+10 && headY >= h.y && headY <= h.y+box+10)){
         clearInterval(game);
         if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
         alert("Game Over!\nScore: " + score + "\nHigh Score: " + highScore);
@@ -244,3 +240,4 @@ function draw() {
     snake.unshift(newHead);
 
     if(score >= 50 && score < 100) ctx.strokeText("Stage 2: Harder!", 250, 20);
+    if(score >= 100 && score <
