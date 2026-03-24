@@ -2,7 +2,12 @@
 <html>
 <head>
     <title>Slither Challenge 🐍</title>
+    <!-- Prevent mobile zoom on double-tap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
+        html, body {
+            touch-action: manipulation; /* disables double-tap zoom */
+        }
         body {
             text-align: center;
             font-family: Arial;
@@ -243,7 +248,7 @@ function draw() {
 
     snake.unshift(newHead);
 
-    if(score >= 50 && score < 100) ctx.strokeText("Stage 2: Harder!", 250, 20);
+if(score >= 50 && score < 100) ctx.strokeText("Stage 2: Harder!", 250, 20);
     if(score >= 100 && score < 120) ctx.strokeText("Stage 3: Hard!", 250, 20);
     if(score >= 120 && score < 150) ctx.strokeText("Stage 4: Harder!", 250, 20);
     if(score >= 150) ctx.strokeText("Stage 5: Hardest!", 250, 20);
