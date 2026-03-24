@@ -14,12 +14,10 @@
             padding: 0;
         }
         canvas {
-            width: 95vw;   /* responsive width */
-            height: 60vh;  /* responsive height (rectangle) */
-            max-width: 800px;
-            max-height: 600px;
             background: black;
             border: 2px solid #0f0;
+            display: block;
+            margin: 0 auto;
         }
         #controls { margin-top: 15px; }
         .btn {
@@ -60,9 +58,16 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// Always rectangular, but responsive
-canvas.width = Math.min(window.innerWidth * 0.95, 800);
-canvas.height = Math.min(window.innerHeight * 0.6, 600);
+// Responsive rectangle: portrait for phone, landscape for PC
+if(window.innerWidth < 768){
+    // Phone: taller than wide
+    canvas.width  = Math.min(window.innerWidth * 0.9, 400);
+    canvas.height = Math.min(window.innerHeight * 0.6, 600);
+} else {
+    // PC: wider than tall
+    canvas.width  = Math.min(window.innerWidth * 0.95, 800);
+    canvas.height = Math.min(window.innerHeight * 0.7, 600);
+}
 
 // Grid setup
 let cols = 20;
