@@ -4,7 +4,6 @@
     <title>Slither Challenge 🐍</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        html, body { touch-action: manipulation; }
         body {
             text-align: center;
             font-family: Arial;
@@ -13,27 +12,41 @@
             margin: 0;
             padding: 0;
         }
+        .game-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
         canvas {
             background: black;
             border: 2px solid #0f0;
-            display: block;
-            margin: 0 auto;
+            display: inline-block;
         }
-        #controls { margin-top: 15px; }
+        #controls {
+            display: inline-block;
+            margin-left: 20px;
+        }
         .btn {
             width: 20vw; height: 20vw;
-            max-width: 120px; max-height: 120px;
-            margin: 8px; font-size: 7vw;
+            max-width: 100px; max-height: 100px;
+            margin: 8px; font-size: 6vw;
             font-weight: bold; border-radius: 25px;
             border: none; background: #0f0; color: black;
             cursor: pointer; user-select: none;
         }
         .btn:active { background: #0c0; }
         #restart {
-            position: fixed; top: 10px; right: 10px;
-            width: 30vw; max-width: 160px;
-            height: 10vw; max-height: 60px;
-            font-size: 4vw; border-radius: 12px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 100px;
+            height: 40px;
+            font-size: 16px;
+            border-radius: 8px;
+            background: #0f0;
+            color: black;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -41,32 +54,32 @@
 
 <h2>Slither Challenge 🐍</h2>
 <h3>Score: <span id="score">0</span></h3>
-<canvas id="game"></canvas>
 
-<div id="controls">
-    <div><button class="btn" id="up">⬆️</button></div>
-    <div>
-        <button class="btn" id="left">⬅️</button>
-        <button class="btn" id="down">⬇️</button>
-        <button class="btn" id="right">➡️</button>
+<div class="game-container">
+    <canvas id="game"></canvas>
+    <div id="controls">
+        <div><button class="btn" id="up">⬆️</button></div>
+        <div>
+            <button class="btn" id="left">⬅️</button>
+            <button class="btn" id="down">⬇️</button>
+            <button class="btn" id="right">➡️</button>
+        </div>
     </div>
 </div>
 
-<button class="btn" id="restart">Restart</button>
+<button id="restart">Restart</button>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// Always landscape rectangle: wider than tall
+// Landscape rectangle for phone and PC
 if(window.innerWidth < 768){
-    // Phone: smaller landscape rectangle
-    canvas.width  = Math.min(window.innerWidth * 0.95, 480);
+    canvas.width  = Math.min(window.innerWidth * 0.9, 480);
     canvas.height = Math.min(window.innerHeight * 0.5, 300);
 } else {
-    // PC: larger landscape rectangle
-    canvas.width  = Math.min(window.innerWidth * 0.95, 800);
-    canvas.height = Math.min(window.innerHeight * 0.7, 500);
+    canvas.width  = Math.min(window.innerWidth * 0.7, 800);
+    canvas.height = Math.min(window.innerHeight * 0.6, 500);
 }
 
 // Grid setup
@@ -80,7 +93,6 @@ let foods = [];
 let hazards = [];
 let bonusFood = null;
 let bonusTimer = 0;
-let frameCount = 0;
 let highScore = localStorage.getItem("highScore") || 0;
 
 function init() {
@@ -128,9 +140,8 @@ function drawSnake() {
 }
 
 function drawFoods() {
-    frameCount++;
     foods.forEach(food => {
-        ctx.fillStyle = frameCount % 20 < 10 ? "red" : "#ff5555";
+        ctx.fillStyle = "red";
         ctx.beginPath();
         ctx.arc(food.col*boxX + boxX/2, food.row*boxY + boxY/2, Math.min(boxX,boxY)/2, 0, Math.PI*2);
         ctx.fill();
@@ -149,9 +160,24 @@ function drawBonus() {
         ctx.fillStyle = "gold";
         ctx.font = Math.min(boxX,boxY) + "px Arial";
         ctx.fillText("★", bonusFood.col*boxX+5, bonusFood.row*boxY+boxY-5);
+
+        ctx.fillStyle = "white";
+        ctx.fillRect(bonusFood.col*boxX, bonusFood.row*boxY-8, boxX, 5);
+        ctx.fillStyle = "blue";
+        ctx.fillRect(bonusFood.col*boxX, bonusFood.row*boxY-8, (bonusTimer/200)*boxX, 5);
+
         bonusTimer--;
         if(bonusTimer <= 0) bonusFood = null;
     }
+}
+
+function drawStageMessages() {
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    if(score >= 20 && score < 50) ctx.fillText("Stage 2: Harder!", canvas.width/3, 20);
+    if(score >= 50 && score < 100) ctx.fillText("Stage 3: Hard!", canvas.width/3, 20);
+    if(score >= 100 && score < 150) ctx.fillText("Stage 4: Harder!", canvas.width/3, 20);
+    if(score >= 150) ctx.fillText("Stage 5: Hardest!", canvas.width/3, 20);
 }
 
 function draw() {
@@ -162,6 +188,7 @@ function draw() {
     drawFoods();
     drawHazards();
     drawBonus();
+    drawStageMessages();
 
     let head = {col: snake[0].col, row: snake[0].row};
     if (direction === "LEFT") head.col--;
@@ -169,7 +196,6 @@ function draw() {
     if (direction === "RIGHT") head.col++;
     if (direction === "DOWN") head.row++;
 
-    // Wrap around
     if(head.col >= cols) head.col = 0;
     if(head.col < 0) head.col = cols-1;
     if(head.row >= rows) head.row = 0;
@@ -183,6 +209,15 @@ function draw() {
             foods.splice(i,1);
             ate = true;
             spawnFood();
+
+            if(score % 5 === 0) spawnBonus(3);
+            if(score % 10 === 0) spawnBonus(5);
+            if(score % 20 === 0){
+                spawnHazard();
+                speed = Math.max(50, speed - 20);
+                clearInterval(game);
+                game = setInterval(draw, speed);
+            }
         }
     });
 
@@ -194,8 +229,7 @@ function draw() {
 
     if(!ate) snake.pop();
 
-    // Game over if snake hits itself
-    if(snake.some(part => part.col === head.col && part.row === head.row)){
+if(snake.some(part => part.col === head.col && part.row === head.row)){
         clearInterval(game);
         if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
         ctx.fillStyle = "white";
@@ -203,6 +237,7 @@ function draw() {
         ctx.fillText("GAME OVER!", canvas.width/4, canvas.height/2);
         ctx.fillText("Score: " + score, canvas.width/4, canvas.height/2 + boxY*1.5);
         ctx.fillText("High Score: " + highScore, canvas.width/4, canvas.height/2 + boxY*3);
+        return;
     }
 
     snake.unshift(head);
