@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>Slither Challenge 🐍</title>
-    <!-- Prevent mobile zoom on double-tap -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         html, body {
@@ -17,18 +16,23 @@
             padding: 0;
         }
         canvas {
+            width: 95vw;   /* responsive width */
+            height: 70vh;  /* responsive height (rectangle) */
+            max-width: 800px;
+            max-height: 600px;
             background: black;
-            margin-top: 10px;
             border: 2px solid #0f0;
         }
         #controls {
             margin-top: 15px;
         }
         .btn {
-            width: 150px;   /* Bigger buttons */
-            height: 150px;
-            margin: 12px;
-            font-size: 60px; /* Larger arrows */
+            width: 25vw;
+            height: 25vw;
+            max-width: 150px;
+            max-height: 150px;
+            margin: 8px;
+            font-size: 8vw;
             font-weight: bold;
             border-radius: 25px;
             border: none;
@@ -41,12 +45,14 @@
             background: #0c0;
         }
         #restart {
-            position: absolute;
+            position: fixed;
             top: 10px;
             right: 10px;
-            width: 160px;
-            height: 60px;
-            font-size: 22px;
+            width: 30vw;
+            max-width: 160px;
+            height: 10vw;
+            max-height: 60px;
+            font-size: 4vw;
             border-radius: 12px;
         }
     </style>
@@ -55,7 +61,7 @@
 
 <h2>Slither Challenge 🐍</h2>
 <h3>Score: <span id="score">0</span></h3>
-<canvas id="game" width="600" height="600"></canvas>
+<canvas id="game"></canvas>
 
 <div id="controls">
     <div>
@@ -74,7 +80,15 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let box = 30;
+// set canvas size dynamically (rectangle)
+canvas.width = Math.min(window.innerWidth * 0.95, 800);
+canvas.height = Math.min(window.innerHeight * 0.7, 600);
+
+let cols = 20; // number of columns
+let rows = 15; // number of rows
+let boxX = canvas.width / cols;
+let boxY = canvas.height / rows;
+
 let snake, direction, score, speed, game;
 let foods = [];
 let hazards = [];
@@ -84,7 +98,7 @@ let frameCount = 0;
 let highScore = localStorage.getItem("highScore") || 0;
 
 function init() {
-    snake = [{x: 10*box, y: 10*box}];
+    snake = [{x: 10*boxX, y: 7*boxY}];
     direction = "RIGHT";
     score = 0;
     speed = 200;
@@ -99,8 +113,8 @@ function init() {
 }
 
 function randomPos() {
-    let x = Math.floor(Math.random()*Math.floor(600/box)) * box;
-    let y = Math.floor(Math.random()*Math.floor(600/box)) * box;
+    let x = Math.floor(Math.random()*cols) * boxX;
+    let y = Math.floor(Math.random()*rows) * boxY;
     return {x,y};
 }
 
@@ -117,10 +131,10 @@ function spawnHazard() {
 function spawnBonus(value) {
     let pos = randomPos();
     bonusFood = {x: pos.x, y: pos.y, value};
-    bonusTimer = 200; // ~10 seconds at 50ms frames
+    bonusTimer = 200;
 }
 
-// Controls (super responsive)
+// Controls
 document.onkeydown = e => {
     if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
     else if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
@@ -135,14 +149,14 @@ document.getElementById("restart").onclick = init;
 
 function drawSnake() {
     snake.forEach((part, index) => {
-        let gradient = ctx.createLinearGradient(part.x, part.y, part.x+box, part.y+box);
+        let gradient = ctx.createLinearGradient(part.x, part.y, part.x+boxX, part.y+boxY);
         gradient.addColorStop(0, "lime");
         gradient.addColorStop(1, "green");
         ctx.fillStyle = gradient;
-        ctx.fillRect(part.x, part.y, box, box);
+        ctx.fillRect(part.x, part.y, boxX, boxY);
         if(index === 0){
             ctx.fillStyle = "yellow";
-            ctx.fillRect(part.x, part.y, box, box);
+            ctx.fillRect(part.x, part.y, boxX, boxY);
         }
     });
 }
@@ -153,7 +167,7 @@ function drawFoods() {
         let pulse = 2 * Math.sin(frameCount / 10);
         ctx.fillStyle = frameCount % 20 < 10 ? "red" : "#ff5555";
         ctx.beginPath();
-        ctx.arc(food.x + box/2, food.y + box/2, (box/2) + pulse, 0, Math.PI*2);
+        ctx.arc(food.x + boxX/2, food.y + boxY/2, Math.min(boxX,boxY)/2 + pulse, 0, Math.PI*2);
         ctx.fill();
     });
 }
@@ -161,21 +175,20 @@ function drawFoods() {
 function drawHazards() {
     hazards.forEach(h => {
         ctx.fillStyle = "#333";
-        ctx.fillRect(h.x, h.y, box+10, box+10); // bigger than food
+        ctx.fillRect(h.x, h.y, boxX+5, boxY+5);
     });
 }
 
 function drawBonus() {
     if(bonusFood){
         ctx.fillStyle = "gold";
-        ctx.font = "24px Arial";
-        ctx.fillText("★", bonusFood.x+5, bonusFood.y+25);
+        ctx.font = Math.min(boxX,boxY) + "px Arial";
+        ctx.fillText("★", bonusFood.x+5, bonusFood.y+boxY-5);
 
-        // Timer bar
         ctx.fillStyle = "white";
-        ctx.fillRect(bonusFood.x, bonusFood.y-8, box, 5);
+        ctx.fillRect(bonusFood.x, bonusFood.y-8, boxX, 5);
         ctx.fillStyle = "blue";
-        ctx.fillRect(bonusFood.x, bonusFood.y-8, (bonusTimer/200)*box, 5);
+        ctx.fillRect(bonusFood.x, bonusFood.y-8, (bonusTimer/200)*boxX, 5);
 
         bonusTimer--;
         if(bonusTimer <= 0){
@@ -186,7 +199,7 @@ function drawBonus() {
 
 function draw() {
     ctx.fillStyle = "black";
-    ctx.fillRect(0, 0, 600, 600);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     drawSnake();
     drawFoods();
@@ -195,15 +208,15 @@ function draw() {
 
     let headX = snake[0].x;
     let headY = snake[0].y;
-    if (direction === "LEFT") headX -= box;
-    if (direction === "UP") headY -= box;
-    if (direction === "RIGHT") headX += box;
-    if (direction === "DOWN") headY += box;
+    if (direction === "LEFT") headX -= boxX;
+    if (direction === "UP") headY -= boxY;
+    if (direction === "RIGHT") headX += boxX;
+    if (direction === "DOWN") headY += boxY;
 
-    if(headX >= 600) headX = 0;
-    if(headX < 0) headX = 600 - box;
-    if(headY >= 600) headY = 0;
-    if(headY < 0) headY = 600 - box;
+    if(headX >= canvas.width) headX = 0;
+    if(headX < 0) headX = canvas.width - boxX;
+    if(headY >= canvas.height) headY = 0;
+    if(headY < 0) headY = canvas.height - boxY;
 
     let ate = false;
     foods.forEach((food, i) => {
@@ -235,23 +248,21 @@ function draw() {
 
     let newHead = {x: headX, y: headY};
 
-    // Game over only if snake hits itself
     if(snake.some(part => part.x === headX && part.y === headY)){
         clearInterval(game);
         if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
         ctx.fillStyle = "white";
-        ctx.font = "40px Arial";
-        ctx.fillText("GAME OVER!", 200, 300);
-        ctx.fillText("Score: " + score, 200, 350);
-        ctx.fillText("High Score: " + highScore, 200, 400);
+        ctx.fillText("GAME OVER!", canvas.width/4, canvas.height/2);
+        ctx.fillText("Score: " + score, canvas.width/4, canvas.height/2 + boxY*1.5);
+        ctx.fillText("High Score: " + highScore, canvas.width/4, canvas.height/2 + boxY*3);
     }
 
     snake.unshift(newHead);
 
-if(score >= 50 && score < 100) ctx.strokeText("Stage 2: Harder!", 250, 20);
-    if(score >= 100 && score < 120) ctx.strokeText("Stage 3: Hard!", 250, 20);
-    if(score >= 120 && score < 150) ctx.strokeText("Stage 4: Harder!", 250, 20);
-    if(score >= 150) ctx.strokeText("Stage 5: Hardest!", 250, 20);
+    if(score >= 50 && score < 100) ctx.strokeText("Stage 2: Harder!", canvas.width/3, 20);
+    if(score >= 100 && score < 120) ctx.strokeText("Stage 3: Hard!", canvas.width/3, 20);
+    if(score >= 120 && score < 150) ctx.strokeText("Stage 4: Harder!", canvas.width/3, 20);
+    if(score >= 150) ctx.strokeText("Stage 5: Hardest!", canvas.width/3, 20);
 }
 
 init();
