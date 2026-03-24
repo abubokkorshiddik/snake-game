@@ -72,7 +72,9 @@ const ctx = canvas.getContext("2d");
 let box = 30;
 let snake, direction, score, speed, game;
 let foods = [];
-let trees = [];
+let hazards = [];
+let bonusFood = null;
+let bonusTimer = 0;
 let frameCount = 0;
 let highScore = localStorage.getItem("highScore") || 0;
 
@@ -82,8 +84,9 @@ function init() {
     score = 0;
     speed = 200;
     foods = [];
-    trees = [];
-    spawnFood(1);
+    hazards = [];
+    bonusFood = null;
+    spawnFood();
     document.getElementById("score").innerText = score;
 
     if (game) clearInterval(game);
@@ -96,14 +99,20 @@ function randomPos() {
     return {x,y};
 }
 
-function spawnFood(value=1) {
+function spawnFood() {
     let pos = randomPos();
-    foods.push({x: pos.x, y: pos.y, value});
+    foods.push({x: pos.x, y: pos.y});
 }
 
-function spawnTree() {
+function spawnHazard() {
     let pos = randomPos();
-    trees.push({x: pos.x, y: pos.y});
+    hazards.push({x: pos.x, y: pos.y});
+}
+
+function spawnBonus(value) {
+    let pos = randomPos();
+    bonusFood = {x: pos.x, y: pos.y, value};
+    bonusTimer = 200; // ~10 seconds at 50ms frames
 }
 
 // Controls
@@ -148,15 +157,30 @@ function drawFoods() {
     });
 }
 
-function drawTrees() {
-    trees.forEach(tree => {
-        ctx.fillStyle = "brown";
-        ctx.fillRect(tree.x, tree.y, box, box);
-        ctx.fillStyle = "green";
-        ctx.beginPath();
-        ctx.arc(tree.x+box/2, tree.y, box/2, 0, Math.PI*2);
-        ctx.fill();
+function drawHazards() {
+    hazards.forEach(h => {
+        ctx.fillStyle = "#333";
+        ctx.fillRect(h.x, h.y, box+10, box+10); // bigger than food
     });
+}
+
+function drawBonus() {
+    if(bonusFood){
+        ctx.fillStyle = "gold";
+        ctx.font = "24px Arial";
+        ctx.fillText("★", bonusFood.x+5, bonusFood.y+25);
+
+        // Draw timer bar
+        ctx.fillStyle = "white";
+        ctx.fillRect(bonusFood.x, bonusFood.y-8, box, 5);
+        ctx.fillStyle = "blue";
+        ctx.fillRect(bonusFood.x, bonusFood.y-8, (bonusTimer/200)*box, 5);
+
+        bonusTimer--;
+        if(bonusTimer <= 0){
+            bonusFood = null;
+        }
+    }
 }
 
 function draw() {
@@ -165,7 +189,8 @@ function draw() {
 
     drawSnake();
     drawFoods();
-    drawTrees();
+    drawHazards();
+    drawBonus();
 
     let headX = snake[0].x;
     let headY = snake[0].y;
@@ -179,36 +204,38 @@ function draw() {
     if(headY >= 600) headY = 0;
     if(headY < 0) headY = 600 - box;
 
-    // Eat food
     let ate = false;
     foods.forEach((food, i) => {
         if(headX === food.x && headY === food.y){
-            score += food.value;
+            score++;
             document.getElementById("score").innerText = score;
             foods.splice(i,1);
             ate = true;
+            spawnFood();
 
-            // spawn normal food
-            spawnFood(1);
-
-            // special foods
-            if(score % 5 === 0) spawnFood(3);
-            if(score % 10 === 0){ spawnFood(5); spawnFood(3); }
+            if(score % 5 === 0) spawnBonus(3);
+            if(score % 10 === 0) spawnBonus(5);
             if(score % 20 === 0){
-                spawnTree();
+                spawnHazard();
                 speed = Math.max(50, speed - 20);
                 clearInterval(game);
                 game = setInterval(draw, speed);
             }
         }
     });
+
+    if(bonusFood && headX === bonusFood.x && headY === bonusFood.y){
+        score += bonusFood.value;
+        document.getElementById("score").innerText = score;
+        bonusFood = null;
+    }
+
     if(!ate) snake.pop();
 
     let newHead = {x: headX, y: headY};
 
-    // Collision with self or tree
     if(snake.some(part => part.x === headX && part.y === headY) ||
-       trees.some(tree => tree.x === headX && tree.y === headY)){
+       hazards.some(h => headX >= h.x && headX <= h.x+10 && headY >= h.y && headY <= h.y+10)){
         clearInterval(game);
         if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
         alert("Game Over!\nScore: " + score + "\nHigh Score: " + highScore);
@@ -216,14 +243,4 @@ function draw() {
 
     snake.unshift(newHead);
 
-    // Difficulty stages
     if(score >= 50 && score < 100) ctx.strokeText("Stage 2: Harder!", 250, 20);
-    if(score >= 100 && score < 120) ctx.strokeText("Stage 3: Hard!", 250, 20);
-    if(score >= 120 && score < 150) ctx.strokeText("Stage 4: Harder!", 250, 20);
-    if(score >= 150) ctx.strokeText("Stage 5: Hardest!", 250, 20);
-}
-
-init();
-</script>
-</body>
-</html>
