@@ -17,15 +17,17 @@
             justify-content: center;
             align-items: flex-start;
             margin-top: 20px;
+            flex-direction: column; /* default: phone layout */
         }
         canvas {
             background: black;
             border: 2px solid #0f0;
-            display: inline-block;
+            display: block;
+            margin: 0 auto;
         }
         #controls {
-            display: inline-block;
-            margin-left: 20px;
+            margin-top: 15px;
+            text-align: center;
         }
         .btn {
             width: 20vw; height: 20vw;
@@ -47,6 +49,17 @@
             background: #0f0;
             color: black;
             font-weight: bold;
+        }
+        /* On larger screens (PC/laptop), place controls to the right */
+        @media (min-width: 768px) {
+            .game-container {
+                flex-direction: row;
+            }
+            #controls {
+                margin-left: 20px;
+                margin-top: 0;
+                text-align: left;
+            }
         }
     </style>
 </head>
@@ -229,7 +242,8 @@ function draw() {
 
     if(!ate) snake.pop();
 
-if(snake.some(part => part.col === head.col && part.row === head.row)){
+    // Game over if snake hits itself
+    if(snake.some(part => part.col === head.col && part.row === head.row)){
         clearInterval(game);
         if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
         ctx.fillStyle = "white";
