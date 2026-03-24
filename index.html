@@ -4,9 +4,7 @@
     <title>Slither Challenge 🐍</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        html, body {
-            touch-action: manipulation;
-        }
+        html, body { touch-action: manipulation; }
         body {
             text-align: center;
             font-family: Arial;
@@ -19,37 +17,21 @@
             background: black;
             border: 2px solid #0f0;
         }
-        #controls {
-            margin-top: 15px;
-        }
+        #controls { margin-top: 15px; }
         .btn {
-            width: 25vw;
-            height: 25vw;
-            max-width: 150px;
-            max-height: 150px;
-            margin: 8px;
-            font-size: 8vw;
-            font-weight: bold;
-            border-radius: 25px;
-            border: none;
-            background: #0f0;
-            color: black;
-            cursor: pointer;
-            user-select: none;
+            width: 25vw; height: 25vw;
+            max-width: 150px; max-height: 150px;
+            margin: 8px; font-size: 8vw;
+            font-weight: bold; border-radius: 25px;
+            border: none; background: #0f0; color: black;
+            cursor: pointer; user-select: none;
         }
-        .btn:active {
-            background: #0c0;
-        }
+        .btn:active { background: #0c0; }
         #restart {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            width: 30vw;
-            max-width: 160px;
-            height: 10vw;
-            max-height: 60px;
-            font-size: 4vw;
-            border-radius: 12px;
+            position: fixed; top: 10px; right: 10px;
+            width: 30vw; max-width: 160px;
+            height: 10vw; max-height: 60px;
+            font-size: 4vw; border-radius: 12px;
         }
     </style>
 </head>
@@ -60,9 +42,7 @@
 <canvas id="game"></canvas>
 
 <div id="controls">
-    <div>
-        <button class="btn" id="up">⬆️</button>
-    </div>
+    <div><button class="btn" id="up">⬆️</button></div>
     <div>
         <button class="btn" id="left">⬅️</button>
         <button class="btn" id="down">⬇️</button>
@@ -76,19 +56,18 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// Decide square for phone, rectangle for PC
-if(window.innerWidth < 768){ 
-    // phone: square
+// Square for phone, rectangle for PC
+if(window.innerWidth < 768){
     canvas.width = Math.min(window.innerWidth * 0.95, 500);
-    canvas.height = canvas.width;
+    canvas.height = canvas.width; // square
 } else {
-    // pc: rectangle
     canvas.width = Math.min(window.innerWidth * 0.95, 800);
-    canvas.height = Math.min(window.innerHeight * 0.7, 600);
+    canvas.height = Math.min(window.innerHeight * 0.7, 600); // rectangle
 }
 
+// Grid setup
 let cols = 20;
-let rows = (canvas.height < canvas.width) ? 20 : 15; // more rows if rectangle
+let rows = (canvas.width === canvas.height) ? 20 : 15;
 let boxX = canvas.width / cols;
 let boxY = canvas.height / rows;
 
@@ -110,15 +89,14 @@ function init() {
     bonusFood = null;
     spawnFood();
     document.getElementById("score").innerText = score;
-
     if (game) clearInterval(game);
     game = setInterval(draw, speed);
 }
 
 function randomPos() {
-    let x = Math.floor(Math.random()*cols) * boxX;
-    let y = Math.floor(Math.random()*rows) * boxY;
-    return {x,y};
+    let col = Math.floor(Math.random()*cols);
+    let row = Math.floor(Math.random()*rows);
+    return {x: col*boxX, y: row*boxY};
 }
 
 function spawnFood() { foods.push(randomPos()); }
