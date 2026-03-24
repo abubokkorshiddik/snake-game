@@ -60,11 +60,11 @@ const ctx = canvas.getContext("2d");
 
 // Responsive rectangle: portrait for phone, landscape for PC
 if(window.innerWidth < 768){
-    // Phone: taller than wide
-    canvas.width  = Math.min(window.innerWidth * 0.9, 400);
-    canvas.height = Math.min(window.innerHeight * 0.6, 600);
+    // Phone: portrait rectangle (shorter width, longer height)
+    canvas.width  = Math.min(window.innerWidth * 0.8, 360);
+    canvas.height = Math.min(window.innerHeight * 0.7, 640);
 } else {
-    // PC: wider than tall
+    // PC: landscape rectangle (wider than tall)
     canvas.width  = Math.min(window.innerWidth * 0.95, 800);
     canvas.height = Math.min(window.innerHeight * 0.7, 600);
 }
