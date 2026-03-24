@@ -18,12 +18,12 @@
             margin-top: 15px;
         }
         .btn {
-            width: 80px;
-            height: 80px;
-            margin: 5px;
-            font-size: 32px;
+            width: 100px;   /* Bigger buttons */
+            height: 100px;
+            margin: 8px;
+            font-size: 40px; /* Larger arrows */
             font-weight: bold;
-            border-radius: 12px;
+            border-radius: 15px;
             border: none;
             background: #0f0;
             color: black;
@@ -32,6 +32,11 @@
         }
         .btn:active {
             background: #0c0;
+        }
+        #restart {
+            width: 160px;   /* Wider restart button */
+            height: 60px;
+            font-size: 22px;
         }
     </style>
 </head>
@@ -69,7 +74,7 @@ function init() {
     snake = [{x: 10*box, y: 10*box}];
     direction = "RIGHT";
     score = 0;
-    speed = 200; // slower speed
+    speed = 100; // SUPER SPEEDY (lower = faster)
     food = randomFood();
     document.getElementById("score").innerText = score;
 
@@ -80,7 +85,6 @@ function init() {
 function randomFood() {
     let x = Math.floor(Math.random()*Math.floor(600/box)) * box;
     let y = Math.floor(Math.random()*Math.floor(600/box)) * box;
-    // make sure food not on snake
     while(snake.some(part => part.x === x && part.y === y)) {
         x = Math.floor(Math.random()*Math.floor(600/box)) * box;
         y = Math.floor(Math.random()*Math.floor(600/box)) * box;
