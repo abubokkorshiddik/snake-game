@@ -74,7 +74,7 @@ function init() {
     snake = [{x: 10*box, y: 10*box}];
     direction = "RIGHT";
     score = 0;
-    speed = 100; // SUPER SPEEDY (lower = faster)
+    speed = 200; // starting speed
     food = randomFood();
     document.getElementById("score").innerText = score;
 
@@ -100,14 +100,14 @@ document.addEventListener("keydown", e => {
     else if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
 });
 
-// Touch button controls
-document.getElementById("up").addEventListener("click", () => { if(direction!=="DOWN") direction="UP"; });
-document.getElementById("down").addEventListener("click", () => { if(direction!=="UP") direction="DOWN"; });
-document.getElementById("left").addEventListener("click", () => { if(direction!=="RIGHT") direction="LEFT"; });
-document.getElementById("right").addEventListener("click", () => { if(direction!=="LEFT") direction="RIGHT"; });
+// Touch button controls (super speedy response)
+document.getElementById("up").onclick = () => { if(direction!=="DOWN") direction="UP"; };
+document.getElementById("down").onclick = () => { if(direction!=="UP") direction="DOWN"; };
+document.getElementById("left").onclick = () => { if(direction!=="RIGHT") direction="LEFT"; };
+document.getElementById("right").onclick = () => { if(direction!=="LEFT") direction="RIGHT"; };
 
 // Restart button
-document.getElementById("restart").addEventListener("click", init);
+document.getElementById("restart").onclick = init;
 
 function draw() {
     ctx.fillStyle = "black";
@@ -140,6 +140,13 @@ function draw() {
         score++;
         document.getElementById("score").innerText = score;
         food = randomFood();
+
+        // Increase speed every 20 points
+        if(score % 20 === 0){
+            speed = Math.max(50, speed - 20); // faster, but not too fast
+            clearInterval(game);
+            game = setInterval(draw, speed);
+        }
     } else {
         snake.pop();
     }
