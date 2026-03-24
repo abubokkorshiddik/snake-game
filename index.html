@@ -20,12 +20,12 @@
             margin-top: 15px;
         }
         .btn {
-            width: 120px;
-            height: 120px;
-            margin: 10px;
-            font-size: 48px;
+            width: 150px;   /* Bigger buttons */
+            height: 150px;
+            margin: 12px;
+            font-size: 60px; /* Larger arrows */
             font-weight: bold;
-            border-radius: 20px;
+            border-radius: 25px;
             border: none;
             background: #0f0;
             color: black;
@@ -39,10 +39,10 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            width: 140px;
-            height: 50px;
-            font-size: 20px;
-            border-radius: 10px;
+            width: 160px;
+            height: 60px;
+            font-size: 22px;
+            border-radius: 12px;
         }
     </style>
 </head>
@@ -115,13 +115,13 @@ function spawnBonus(value) {
     bonusTimer = 200; // ~10 seconds at 50ms frames
 }
 
-// Controls
-document.addEventListener("keydown", e => {
+// Controls (super responsive)
+document.onkeydown = e => {
     if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
     else if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
     else if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
     else if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
-});
+};
 document.getElementById("up").onclick = () => { if(direction!=="DOWN") direction="UP"; };
 document.getElementById("down").onclick = () => { if(direction!=="UP") direction="DOWN"; };
 document.getElementById("left").onclick = () => { if(direction!=="RIGHT") direction="LEFT"; };
@@ -230,11 +230,15 @@ function draw() {
 
     let newHead = {x: headX, y: headY};
 
-    if(snake.some(part => part.x === headX && part.y === headY) ||
-       hazards.some(h => headX >= h.x && headX <= h.x+box+10 && headY >= h.y && headY <= h.y+box+10)){
+    // Game over only if snake hits itself
+    if(snake.some(part => part.x === headX && part.y === headY)){
         clearInterval(game);
         if(score > highScore){ localStorage.setItem("highScore", score); highScore = score; }
-        alert("Game Over!\nScore: " + score + "\nHigh Score: " + highScore);
+        ctx.fillStyle = "white";
+        ctx.font = "40px Arial";
+        ctx.fillText("GAME OVER!", 200, 300);
+        ctx.fillText("Score: " + score, 200, 350);
+        ctx.fillText("High Score: " + highScore, 200, 400);
     }
 
     snake.unshift(newHead);
